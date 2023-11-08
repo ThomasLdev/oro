@@ -1,5 +1,4 @@
-
-FROM php:8.2-fpm
+FROM proxy-docker.norsys.fr/php:8.2-fpm
 
 RUN apt-get update && apt-get install -y --fix-missing   \
     nginx\
