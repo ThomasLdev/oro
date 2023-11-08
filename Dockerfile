@@ -40,7 +40,10 @@ COPY --from=composer:2.6.3 /usr/bin/composer /usr/local/bin/composer
 
 RUN echo 'memory_limit = 1024M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini;
 
-COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+RUN rm /etc/nginx/sites-enabled/default
+COPY nginx.conf /etc/nginx/conf.d/default.conf 
+COPY ./docker-entrypoint /docker-entrypoint
 
 EXPOSE 80
-ENTRYPOINT [ "/bin/bash" ,"docker-entrypoint.sh"]
+ENTRYPOINT [ "/bin/bash" ,"/docker-entrypoint"]
+CMD [ "php-fpm" ]
