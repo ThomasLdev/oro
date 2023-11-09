@@ -1,4 +1,4 @@
-FROM proxy-docker.norsys.fr/php:8.2-fpm
+FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y --fix-missing   \
     nginx\
@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --fix-missing   \
     postgresql-client \
     postgresql \
     wget
-    
+
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get -y install nodejs
 RUN npm install -g npm@9.3.1
@@ -37,10 +37,18 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 COPY --from=composer:2.6.3 /usr/bin/composer /usr/local/bin/composer
 
+# Dev tools >
+# --- Xdebug
+RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
+
+# --- Symfony CLI
+RUN wget https://get.symfony.com/cli/installer -O - | bash && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+# Dev tools <
+
 RUN echo 'memory_limit = 1024M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini;
 
 RUN rm /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/conf.d/default.conf 
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./docker-entrypoint /docker-entrypoint
 
 EXPOSE 80
