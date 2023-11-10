@@ -16,7 +16,9 @@ RUN apt-get update && apt-get install -y --fix-missing   \
     libpq-dev \
     postgresql-client \
     postgresql \
-    wget
+    wget \
+    nano \
+    locate
 
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get -y install nodejs
@@ -40,12 +42,19 @@ COPY --from=composer:2.6.3 /usr/bin/composer /usr/local/bin/composer
 # Dev tools >
 # --- Xdebug
 RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
+RUN rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+COPY ./php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # --- Symfony CLI
 RUN wget https://get.symfony.com/cli/installer -O - | bash && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
+
+# --- Bash aliases
+COPY ./php/.bashrc /root/.bashrc
 # Dev tools <
 
-RUN echo 'memory_limit = 1024M' >> /usr/local/etc/php/conf.d/docker-php-memlimit.ini;
+# PHP configuration >
+COPY ./php/conf.d/php.dev.ini /usr/local/etc/php/conf.d/docker-php-ext.ini
+# PHP configuration <
 
 RUN rm /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/conf.d/default.conf
