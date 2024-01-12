@@ -33,12 +33,15 @@ RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
     docker-php-ext-install pdo pdo_pgsql pgsql
 
-RUN docker-php-ext-install opcache \
-RUN pecl install apcu && docker-php-ext-enable apcu
-
 RUN docker-php-ext-install -j$(nproc) gd xsl intl zip soap pcntl sockets bcmath
 
 RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+RUN docker-php-ext-install opcache && docker-php-ext-enable opcache
+
+RUN pecl install apcu \
+    && docker-php-ext-enable apcu \
+    && pecl clear-cache
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
@@ -46,6 +49,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 # --- Xdebug
 RUN pecl install xdebug-3.2.1 && docker-php-ext-enable xdebug
 RUN rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+COPY ./php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # --- Symfony CLI
 RUN wget https://get.symfony.com/cli/installer -O - | bash && mv /root/.symfony5/bin/symfony /usr/local/bin/symfony
@@ -55,7 +59,7 @@ COPY ./php/.bashrc /root/.bashrc
 # Dev tools <
 
 # PHP configuration >
-COPY ./php/conf.d /usr/local/etc/php/conf.d
+COPY ./php/conf.d/php.dev.ini /usr/local/etc/php/conf.d/docker-php-ext.ini
 # PHP configuration <
 
 RUN rm /etc/nginx/sites-enabled/default
